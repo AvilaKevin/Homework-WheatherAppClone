@@ -12,7 +12,7 @@ const AppContext = createContext();
 export default function Store({ children }) {
     //STATES:
     // Store the wheather info:
-    let [value, setValue] = useState({});
+    const [weatherData, setWeatherData] = useState({});//El nombre value era muy genérico. weatherData describe mejor el contenido del estado.
     // Store the Background:
     const [appBackground, setAppBackground] = useState(Main);
     // Store the Icon:
@@ -26,17 +26,26 @@ export default function Store({ children }) {
 
         // Capture the form info:
         e.preventDefault();
-        const { city, country } = e.target.elements;
-        const cityValue = city.value;
-        const countryValue = country.value;
-
+        const city = e.target.elements.city?.value.trim();
+        const country = e.target.elements.country?.value.trim();
+        
         // Validate the form info:
-        if (cityValue && countryValue) {
+        if (!city || !country) {
+    setWeatherData({ error: "Please enter a city and a country" });
+    return;//Evita que el usuario envíe espacios vacíos o que haya errores si el input no existe.
             const API_URL = `https://api.openweathermap.org/data/2.5/weather?q=${cityValue},${countryValue}&appid=${WHEATHER_KEY}&units=metric`;
+                try {
+                 const response = await fetch(API_URL);
+               const data = await response.json();
 
-            const response = await fetch(API_URL);
-
-            const data = await response.json();
+                if (response.ok) {
+                // ... procesar datos
+              } else {
+            setWeatherData({ error: data.message || "Weather data not found." });
+             }
+             } catch (error) {
+            setWeatherData({ error: "Something went wrong. Please try again later." });
+           }//Protege tu app de fallos de red o respuestas inválidas de la API.
 
 
             setValue({
